@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import discord
-from discord.ext import commands
+from discord.ext import tasks, commands
 import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
@@ -30,7 +30,8 @@ defaultCoin = 'NULL'
 
 # Extracting API
 # Function of getting crypto prices and saving it into the DB
-def getCryptoPrices():
+@tasks.loop(seconds=15.0)
+async def getCryptoPrices():
     url = mainURL + 'markets?vs_currency=' + fiat
     print(url)
     uh = urllib.request.urlopen(url, context=contx)
@@ -41,14 +42,16 @@ def getCryptoPrices():
     for i in range(len(js)):
         dbSymbol[js[i]['symbol']] = js[i]['current_price']
         db[js[i]['id']] = js[i]['symbol']
-    # Set price every 3 mins
-    threading.Timer(180.0, getCryptoPrices).start()
+    if defaultCoin != 'NULL':
+        await setcoin_function()
 
 
 # Function to setcoin
 async def setcoin_function():
     crypto = defaultCoin
     print (crypto)
+    #if defaultCoin != 'NULL':
+    #    getCryptoPrices()
     if isCryptoSupported(crypto):
         value = checkIfSymbol(crypto)
         symbol = str(value).upper()
@@ -97,13 +100,13 @@ def checkIfSymbol(crypto):
 # || Start of the bot commands using the bots commands framework ||
 client = commands.Bot(command_prefix = '>') # Instancing a bot using the commands framework
 
-
 @client.event   # Take note that the "client" variable is the actual bot
 async def on_ready():
-    getCryptoPrices()
     print("bot has logged in")
     # Print to the console when the bot is online
     await client.get_channel(894442046599860256).send('bot is now online!') 
+
+    #await threading.Timer(60.0, setcoin).start()
 
 
 # Change Prefix function
@@ -131,7 +134,7 @@ async def setfiat_command(ctx, arg):
     global fiat
     fiat = arg
     await ctx.channel.send(f'Default FIAT is now {fiat}')
-    getCryptoPrices()
+    await getCryptoPrices()
     if defaultCoin != 'NULL':
         await setcoin_function() # Updates the status of the bot if it is active
     
@@ -172,6 +175,7 @@ async def price_command(ctx, arg):
 async def hello_command(ctx):
     await ctx.channel.send("Hello Hotdog ")
 
-
+#@getCryptoPrices.before_loop(client.wait_until_ready())
+getCryptoPrices.start()
 # Running/Activating the Bot
 client.run(os.getenv("BOT_TOKEN"))
