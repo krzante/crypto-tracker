@@ -192,6 +192,8 @@ async def price_command(ctx, arg):
 async def hello_command(ctx):
     await ctx.channel.send("Hello Hotdog ")
 
+#mark was here
+
 #@getCryptoPrices.before_loop(client.wait_until_ready())
 getCryptoPrices.start()
 # Running/Activating the Bot
