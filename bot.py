@@ -30,7 +30,7 @@ defaultCoin = 'NULL'
 
 # Extracting API
 # Function of getting crypto prices and saving it into the DB
-@tasks.loop(seconds=15.0)
+@tasks.loop(seconds=120.0)
 async def getCryptoPrices():
     url = mainURL + 'markets?vs_currency=' + fiat
     print(url)
@@ -52,11 +52,20 @@ async def setcoin_function():
     print (crypto)
     #if defaultCoin != 'NULL':
     #    getCryptoPrices()
-    if isCryptoSupported(crypto):
-        value = checkIfSymbol(crypto)
-        symbol = str(value).upper()
-        await client.change_presence(status=discord.Status.idle, \
-            activity = discord.Game(f'{symbol}: {getPrice(value)} {fiat.upper()}' ))
+    async with aiohttp.ClientSession() as session:
+        async with session.get(mainURL + crypto) as r:
+            if isCryptoSupported(crypto) or r.status == 200:
+                if not isCryptoSupported(crypto):
+                    js = await r.json()
+                    symbol = str(js['symbol']).upper()
+                    value = js['market_data']['current_price'][fiat]
+                    await client.change_presence(status=discord.Status.idle, \
+                        activity = discord.Game(f'{symbol}: {value} {fiat.upper()}' ))
+                else:
+                    value = checkIfSymbol(crypto)
+                    symbol = str(value).upper()
+                    await client.change_presence(status=discord.Status.idle, \
+                        activity = discord.Game(f'{symbol}: {getPrice(value)} {fiat.upper()}' ))
 
 
 # Function to get alsdfjlasdjf
@@ -131,12 +140,20 @@ async def support_command(ctx, arg):
 @client.command(name='setfiat', aliases=['sf', 'setf'], description=\
     'Change the default currency conversion')
 async def setfiat_command(ctx, arg):
-    global fiat
-    fiat = arg
-    await ctx.channel.send(f'Default FIAT is now {fiat}')
-    await getCryptoPrices()
-    if defaultCoin != 'NULL':
-        await setcoin_function() # Updates the status of the bot if it is active
+    if ctx.author.top_role.permissions.administrator == True:   #Checks if the user is an Administrator
+        global fiat
+        fiat = arg
+        async with aiohttp.ClientSession() as session:
+            async with session.get(mainURL + 'markets?vs_currency=' + fiat) as r:
+                if r.status == 200:
+                    await ctx.channel.send(f'Default FIAT is now {fiat}')
+                    await getCryptoPrices()
+                    if defaultCoin != 'NULL':
+                        await setcoin_function() # Updates the status of the bot if it is active
+                else:
+                    await ctx.channel.send(f'{fiat} mali lods aral muna')
+    else:
+        await ctx.channel.send(f'You must be an Administrator to change the tracked coin.')
     
 
 # Function to set the custom status tracked coin
