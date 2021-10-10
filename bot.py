@@ -24,8 +24,17 @@ db = {}
 dbSymbol = {}
 mainURL = 'https://api.coingecko.com/api/v3/coins/'
 fiat = 'usd'
-prefix = '$'
 defaultCoin = 'NULL' 
+
+# Load prefixes from json file
+def get_prefix(client, message):
+    with open('prefixes.json', 'r') as f:
+        prefix = json.load(f)
+    print (str(message.guild.id))
+    print (prefix)
+    return prefix[str(message.guild.id)]
+
+# Set default prefix when joining 
 
 
 # Extracting API
@@ -107,7 +116,17 @@ def checkIfSymbol(crypto):
 
 
 # || Start of the bot commands using the bots commands framework ||
-client = commands.Bot(command_prefix = '>') # Instancing a bot using the commands framework
+client = commands.Bot(command_prefix = get_prefix) # Instancing a bot using the commands framework
+
+@client.event
+async def on_guild_join(guild):
+    with open('prefixes.json', 'r') as f:
+        prefix = json.load(f)
+
+    prefix[str(guild.id)] = '$'
+
+    with open('prefixes.json', 'w') as f:
+        json.dump(prefix,f)
 
 @client.event   # Take note that the "client" variable is the actual bot
 async def on_ready():
@@ -122,7 +141,14 @@ async def on_ready():
 @client.command(name='changeprefix', aliases=['cp', 'changep'], description=\
     'Change the Bot prefix')
 async def change_prefix_command(ctx, arg):
-    client.command_prefix = arg
+    with open('prefixes.json', 'r') as f:
+        prefix = json.load(f)
+
+    prefix[str(ctx.guild.id)] = arg
+
+    with open('prefixes.json', 'w') as f:
+        json.dump(prefix,f)
+
     await ctx.channel.send(f'Prefix is changed to {arg}')
 
 
