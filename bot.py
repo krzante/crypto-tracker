@@ -76,6 +76,7 @@ async def setcoin_function():
                         activity = discord.Game(f'{symbol}: {"{:,}".format(getPrice(value))} {fiat.upper()}' ))
 
 
+# Function to return a single field embed
 def getEmbed(name, value, inline):
     embed = discord.Embed(
             colour = discord.Colour.orange()
@@ -139,7 +140,6 @@ async def on_guild_join(guild):
 @client.event   # Take note that the "client" variable is the actual bot
 async def on_ready():
     print("bot has logged in")  # Print to the console when the bot is online
-    # await client.get_channel(894442046599860256).send('bot is now online!') 
 
 
 # Change Prefix function
@@ -159,8 +159,6 @@ async def set_prefix_command(ctx, arg):
             value=f'Prefix is changed to {arg}', \
             inline=False))
 
-    #await ctx.channel.send(f'Prefix is changed to {arg}')
-
 
 # Function to check if the coin is in the default support list
 @client.command(name='support', aliases=['s', 'supp'], description=\
@@ -171,13 +169,11 @@ async def support_command(ctx, arg):
             name='SUPPORTED',\
             value=f'> {arg} is supported', \
             inline=False))
-        # await ctx.channel.send(f'{arg} is supported')
     else:
         await ctx.channel.send(embed=getEmbed(\
             name='NOT SUPPORTED',\
             value=f'> {arg} is not supported. Get the API ID at [coingecko](https://www.coingecko.com/en)', \
             inline=False))
-        #await ctx.channel.send(f'{arg} is not supported, check and use the API id')
 
 
 # Function to set the default fiat
@@ -194,7 +190,6 @@ async def setfiat_command(ctx, arg):
                         name='DEFAULT FIAT CHANGED',\
                         value=f'> Default FIAT is now {str(fiat).upper()}', \
                         inline=False))
-                    # await ctx.channel.send(f'Default FIAT is now {fiat}')
                     await getCryptoPrices()
                     if defaultCoin != 'NULL':
                         await setcoin_function() # Updates the status of the bot if it is active
@@ -204,15 +199,11 @@ async def setfiat_command(ctx, arg):
                         name='FIAT NOT FOUND',\
                         value=f'> Check the supported currencies [here]({hereLink})', \
                         inline=False))
-                    
-                    #await ctx.channel.send(f'{fiat} mali lods aral muna')
     else:
         await ctx.channel.send(embed=getEmbed(\
             name='YOU\'RE NOT AN ADMIN',\
             value=f'> You must be an Administrator to change the default fiat.', \
             inline=False))
-
-        #await ctx.channel.send(f'You must be an Administrator to change the tracked coin.')
     
 
 # Function to set the custom status tracked coin
@@ -237,15 +228,11 @@ async def setcoin_command(ctx, arg):
                         name='COIN NOT FOUND',\
                         value=f'> Get the API ID at [coingecko](https://www.coingecko.com/en)', \
                         inline=False))
-
-        #await ctx.channel.send(f'"{defaultCoin}" is now being tracked')
     else:
         await ctx.channel.send(embed=getEmbed(\
             name='YOU\'RE NOT AN ADMIN',\
             value=f'> You must be an Administrator to change the tracked coin.', \
             inline=False))
-
-        #await ctx.channel.send(f'You must be an Administrator to change the tracked coin.')
 
 
 # Function to check the current price of a coin using the API ID
@@ -261,20 +248,15 @@ async def price_command(ctx, arg):
                 value = "{:,}".format(getPrice(coin))
                 print(coin)
                 print(fiat)
-
                 await ctx.channel.send(embed=getEmbed(\
                     name=f'THE PRICE OF {crypto.upper()}:',\
                     value=f'> {value} {fiat.upper()}', \
                     inline=False))
-
-                # await ctx.channel.send(f'The current price of {crypto.upper()} is: {value} {fiat.upper()}.')
             else:
                 await ctx.channel.send(embed=getEmbed(\
                     name='COIN NOT FOUND',\
                     value=f'> get the API ID at [coingecko](https://www.coingecko.com/en)', \
                     inline=False))
-
-                #await ctx.channel.send(f'The token is not not found, get the API ID at [coingecko](https://www.coingecko.com/en)')
 
 
 @client.command(name='help', aliases=['h'])
