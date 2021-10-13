@@ -180,7 +180,7 @@ async def support_command(ctx, arg):
 @client.command(name='setfiat', aliases=['sf', 'setf'], description=\
     'Change the default currency conversion')
 async def setfiat_command(ctx, arg):
-    if ctx.author.top_role.permissions.administrator == True:   #Checks if the user is an Administrator
+    if ctx.author.guild_permissions.administrator == True:   #Checks if the user is an Administrator
         global fiat
         fiat = arg
         async with aiohttp.ClientSession() as session:
