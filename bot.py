@@ -22,8 +22,8 @@ contx.verify_mode = ssl.CERT_NONE
 db = {}
 dbSymbol = {}
 mainURL = 'https://api.coingecko.com/api/v3/coins/'
-fiat = 'usd'
-defaultCoin = 'NULL' 
+fiat = 'php'
+defaultCoin = 'smooth-love-potion' 
 
 # Load prefixes from json file
 def get_prefix(client, message):
@@ -132,7 +132,7 @@ async def on_guild_join(guild):
     with open('prefixes.json', 'r') as f:
         prefix = json.load(f)
 
-    prefix[str(guild.id)] = '$'
+    prefix[str(guild.id)] = 'cb!'
 
     with open('prefixes.json', 'w') as f:
         json.dump(prefix,f)
